@@ -1,17 +1,30 @@
 import pygame
 
-def main():
-	pygame.init()
-	pygame.display.set_caption('getting a window')
+__window_title = 'Forward Snake'
 
-	screen = pygame.display.set_mode((640, 480))
+def quit():
+	print('Bye!')
+	pass
 
-	running = True
+# initializing pygame
+pygame.init()
+screen = pygame.display.set_mode((640, 480))
+# setting the window title
+pygame.display.set_caption(__window_title)
 
-	while running:
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				running = False
+# A flag to keep or not keep the game loop running
+running = True
+# The in game clock.
+clock = pygame.time.Clock()
 
-if __name__ == "__main__":
-	main()
+while running:
+	for event in pygame.event.get():
+		running = not (event.type == pygame.QUIT)
+		print(event)
+
+	pygame.draw.rect(screen, (255, 255, 255), [25, 25, 100, 100])
+	pygame.display.update()
+	clock.tick(60)
+
+pygame.quit()
+quit()
