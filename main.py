@@ -64,6 +64,8 @@ def update_snake():
 	# use the global snake and appple.
 	global snake
 	global apple
+	global score
+	global running
 
 	# move the snake's head one cell in its current direction
 	new_head = (snake[0][0] + snake_direction[0], snake[0][1] + snake_direction[1])
@@ -91,14 +93,12 @@ def update_snake():
 	
 	# check if the snake is eating itself.
 	if snake[0] in snake[1:]:
-		global running
 		running = False
 		print("SNEK ATE ITSELF!")
+		print("YOUR SCORE: ", score)
 		
 	# if the snake's head is currently in the same position as the apple
 	if new_head == apple:
-		global score
-		print("SNEK IS EAT APPLE.")
 		score += 1
 		# create a new head for the snake and set a new apple.
 		snake = [apple] + snake
@@ -109,9 +109,9 @@ def update_message(message):
 	global screen
 	font = pygame.font.SysFont('lato', 24, bold=True)
 	img = font.render(message, True, __black)
-	pygame.draw.rect(screen, __white, pygame.Rect(50, 500, 110, 40))
-	screen.blit(img, (50, 500, 100, 40))
-	
+	pygame.draw.rect(screen, __white, pygame.Rect(50, 500, 110, 30))
+	screen.blit(img, (50, 500, 100, 30))
+
 
 def update_grid():
 
