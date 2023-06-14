@@ -4,7 +4,7 @@ import random
 
 #window constants
 __window_title = 'Forward Snake'
-__screen_resolution = (640, 640)
+__screen_resolution = (560, 560)
 __INPUT_FPS = 60 # how many times the input is scanned for per second
 __GAME_FPS = 5	 # how many times the frame on the screen changes per second.
 
@@ -14,6 +14,7 @@ __snake_head_green = (75, 250, 0)
 __snake_body_green = (92, 196, 47)
 __apple_red = (252, 79, 48)
 __black = (0, 0, 0)
+__yellow = (250, 250, 0)
 
 #grid constants
 __grid_dimensions = (20, 20)
@@ -21,12 +22,14 @@ __grid_cell_width = 20
 __grid_cell_height = 20
 __grid_cell_padding_x = 2
 __grid_cell_padding_y = 2
-__grid_start_coordinates = (10, 10)
+__grid_start_coordinates = (50, 50)
 
 
 def quit():
-	print('GAME OVER!')
-	pygame.quit()
+	global score
+	update_message("GAME OVER! SCORE: " + str(score))
+	#pygame.font.quit()
+	#pygame.quit()
 	pass
 
 
@@ -94,11 +97,21 @@ def update_snake():
 		
 	# if the snake's head is currently in the same position as the apple
 	if new_head == apple:
+		global score
 		print("SNEK IS EAT APPLE.")
+		score += 1
 		# create a new head for the snake and set a new apple.
 		snake = [apple] + snake
 		apple = set_new_apple()
 
+
+def update_message(message):
+	global screen
+	font = pygame.font.SysFont('lato', 24, bold=True)
+	img = font.render(message, True, __black)
+	pygame.draw.rect(screen, __white, pygame.Rect(50, 500, 110, 40))
+	screen.blit(img, (50, 500, 100, 40))
+	
 
 def update_grid():
 
@@ -129,10 +142,15 @@ def update_grid():
 
 		current_y += __grid_cell_height + __grid_cell_padding_y
 		current_x = start_x
+	
+	#draw a yellow border around the grid.
+	pygame.draw.rect(screen, (255, 255, 0), [__grid_start_coordinates[0] - 5, __grid_start_coordinates[1] - 5, 447, 447], 2)
 
 
 # initializing pygame
 pygame.init()
+pygame.font.init()
+font = pygame.font.SysFont("lato", 35)
 screen = pygame.display.set_mode(__screen_resolution)
 # setting the window title
 pygame.display.set_caption(__window_title)
@@ -147,6 +165,8 @@ snake = init_snake()
 apple = set_new_apple()
 # setting snake direction as a vector. To left by default.
 snake_direction = (-1, 0) 
+# setup a score
+score = 0
 
 #the next time when the screen should update.
 next_update_time = set_next_update_time()
@@ -169,6 +189,7 @@ while running:
 	if get_current_time_ms() >= next_update_time:
 		update_snake()
 		update_grid()
+		update_message("SCORE: " + str(score))
 		next_update_time = set_next_update_time()
 
 	pygame.display.update()
