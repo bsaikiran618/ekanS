@@ -1,12 +1,18 @@
 import pygame
+import time
 import random
 
 #window constants
 __window_title = 'Forward Snake'
 __screen_resolution = (640, 640)
+__INPUT_FPS = 60 # how many times the input is scanned for per second
+__GAME_FPS = 5	 # how many times the frame on the screen changes per second.
 
-# colors constants
+# color constants
 __white = (255, 255, 255)
+__snake_head_green = (75, 250, 0)
+__snake_body_green = (92, 196, 47)
+__apple_red = (252, 79, 48)
 __black = (0, 0, 0)
 
 #grid constants
@@ -19,12 +25,23 @@ __grid_start_coordinates = (10, 10)
 
 
 def quit():
-	print('Bye!')
+	print('GAME OVER!')
+	pygame.quit()
 	pass
 
+
+def get_current_time_ms():
+	return int(time.time() * 1000)
+
+
+def set_next_update_time():
+	return get_current_time_ms() + int((1 / __GAME_FPS) * 1000)
+
+
 def init_snake():
-	snake_coordinates = [(__grid_dimensions[0] // 2, __grid_dimensions[1] // 2)]A
+	snake_coordinates = [(__grid_dimensions[0] // 2, __grid_dimensions[1] // 2)]
 	return snake_coordinates
+
 
 def set_new_apple():
 	# put an apple at random on the grid
@@ -38,6 +55,7 @@ def set_new_apple():
 		if apple_coords not in snake:
 			return apple_coords
 
+
 def update_snake():
 
 	# use the global snake and appple.
@@ -49,16 +67,17 @@ def update_snake():
 	
 	# do some boundary checking
 	if new_head[0] == -1:
-		new_head[0] = __grid_dimensions[1]
+		new_head = (__grid_dimensions[1] - 1, new_head[1])
 
 	if new_head[0] == __grid_dimensions[1]:
-		new_head[0] = 0
+		new_head = (0, new_head[1])
 
 	if new_head[1] == -1:
-		new_head[1] = __grid_dimensions[0]
+		new_head = (new_head[0], __grid_dimensions[0] - 1)
 
 	if new_head[1] == __grid_dimensions[0]:
-		new_head[1] = 0
+		new_head = (new_head[0], 0)
+	
 
 	#update the whole snake
 	temp = new_head
@@ -66,6 +85,12 @@ def update_snake():
 		new_temp = snake[i]
 		snake[i] = temp
 		temp = new_temp
+	
+	# check if the snake is eating itself.
+	if snake[0] in snake[1:]:
+		global running
+		running = False
+		print("SNEK ATE ITSELF!")
 		
 	# if the snake's head is currently in the same position as the apple
 	if new_head == apple:
@@ -74,7 +99,11 @@ def update_snake():
 		snake = [apple] + snake
 		apple = set_new_apple()
 
-def make_grid():
+
+def update_grid():
+
+	global snake
+	global apple
 
 	rows, cols = __grid_dimensions
 	start_x, start_y = __grid_start_coordinates
@@ -84,12 +113,22 @@ def make_grid():
 
 	for i in range(0, rows):
 		for j in range(0, cols):
-			pygame.draw.rect(screen, __white, [current_x, current_y, __grid_cell_width, __grid_cell_height])
+
+			color = __white
+			if (j, i) == apple:
+				color = __apple_red
+			elif (j, i) == snake[0]:
+				color = __snake_head_green
+			elif (j, i) in snake:
+				color = __snake_body_green
+			else:
+				color = __white
+				
+			pygame.draw.rect(screen, color, [current_x, current_y, __grid_cell_width, __grid_cell_height])
 			current_x += __grid_cell_width + __grid_cell_padding_x
 
 		current_y += __grid_cell_height + __grid_cell_padding_y
 		current_x = start_x
-	
 
 
 # initializing pygame
@@ -109,14 +148,31 @@ apple = set_new_apple()
 # setting snake direction as a vector. To left by default.
 snake_direction = (-1, 0) 
 
+#the next time when the screen should update.
+next_update_time = set_next_update_time()
+
 while running:
 	for event in pygame.event.get():
 		running = not (event.type == pygame.QUIT)
-		print(event)
 
-	make_grid()
+	pressed_key = pygame.key.get_pressed()
+	if pressed_key[pygame.K_UP]:
+		snake_direction = (0, -1)
+	if pressed_key[pygame.K_DOWN]:
+		snake_direction = (0, 1)
+	if pressed_key[pygame.K_LEFT]:
+		snake_direction = (-1, 0)
+	if pressed_key[pygame.K_RIGHT]:
+		snake_direction = (1, 0)
+
+
+	if get_current_time_ms() >= next_update_time:
+		update_snake()
+		update_grid()
+		next_update_time = set_next_update_time()
+
 	pygame.display.update()
-	clock.tick(2)
+	clock.tick(__INPUT_FPS)
 
-pygame.quit()
+#quit the game, once we are out of the loop
 quit()
